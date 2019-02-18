@@ -22,10 +22,15 @@ HtmlWebpackExcludeAssetsPlugin.prototype.applyCompilation = function applyCompil
   if ('hooks' in compilation) {
     // If our target hook is not present, throw a descriptive error
     if (!compilation.hooks.htmlWebpackPluginAlterAssetTags) {
-      throw new Error('The expected HtmlWebpackPlugin hook was not found! Ensure HtmlWebpackPlugin is installed and' +
-        ' was initialized before this plugin.');
+      var HtmlWebpackPlugin = require('html-webpack-plugin');
+      if (HtmlWebpackPlugin.getHooks) {
+        var hooks = HtmlWebpackPlugin.getHooks(compilation);
+        hooks.alterAssetTagGroups.tapAsync('HtmlWebpackExcludeAssetsPlugin', registerCb);
+      }
+    } else {
+      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(this.PluginName, registerCb);
     }
-    compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(this.PluginName, registerCb);
+
   } else {
     compilation.plugin('html-webpack-plugin-alter-asset-tags', registerCb);
   }
